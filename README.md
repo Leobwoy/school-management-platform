@@ -11,26 +11,58 @@ A comprehensive, production-ready School Management System built with modern mic
 ### Prerequisites
 - Node.js 18+
 - npm or yarn
-- Docker (optional)
+- Docker & Docker Compose
+- PostgreSQL 15+ (or use Docker)
 
-### Installation
+### Automated Setup (Recommended)
 ```bash
-npm install
+# Windows (PowerShell)
+.\scripts\dev-setup.ps1
+
+# Linux/Mac (Bash)
+chmod +x scripts/dev-setup.sh
+./scripts/dev-setup.sh
 ```
 
-### Development
+### Manual Setup
 ```bash
+# 1. Install dependencies
+npm install
+
+# 2. Setup environment
+cp env.example .env
+
+# 3. Start database
+docker-compose up -d postgres
+
+# 4. Generate Prisma clients
+cd services/user-service && npx prisma generate
+cd ../academic-service && npx prisma generate
+cd ../..
+
+# 5. Start all services
 npm run dev
 ```
 
-### Testing
+### Docker Development
 ```bash
-npm test
+# Start all services with Docker
+docker-compose up
+
+# Start in background
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
 ```
 
-### Building
+### Production Deployment
 ```bash
-npm run build
+# Build and start production containers
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
 ## 🏗️ Architecture
@@ -56,14 +88,43 @@ This system follows a **microservices architecture** with the following componen
 ```
 school-management-platform/
 ├── apps/
-│   └── web/                 # React frontend
+│   └── web/                 # React frontend with Material-UI
 ├── services/
-│   ├── api-gateway/         # API Gateway service
-│   ├── user-service/        # User management service
-│   └── academic-service/     # Academic management service
-├── packages/               # Shared packages
-└── docs/                   # Documentation
+│   ├── api-gateway/         # API Gateway with authentication
+│   ├── user-service/        # User management & authentication
+│   └── academic-service/    # Academic management & database
+├── scripts/                 # Setup and utility scripts
+├── docker-compose.yml       # Docker orchestration
+├── env.example             # Environment variables template
+└── README.md               # This file
 ```
+
+## 🔧 Services Overview
+
+### Frontend (React)
+- **Port**: 3000
+- **Technology**: React 18+, TypeScript, Material-UI
+- **Features**: Responsive UI, routing, state management
+
+### API Gateway
+- **Port**: 4000
+- **Technology**: Node.js, Express, TypeScript
+- **Features**: Authentication, rate limiting, request routing
+
+### User Service
+- **Port**: 4001
+- **Technology**: Node.js, Express, Prisma, PostgreSQL
+- **Features**: User management, JWT authentication, role-based access
+
+### Academic Service
+- **Port**: 4002
+- **Technology**: Node.js, Express, Prisma, PostgreSQL
+- **Features**: Student management, academic records, timetables
+
+### Database
+- **Port**: 5432
+- **Technology**: PostgreSQL 15
+- **Features**: Relational database with comprehensive schema
 
 ## 🚀 Deployment
 

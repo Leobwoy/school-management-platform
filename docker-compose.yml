@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: school-postgres
+    environment:
+      POSTGRES_DB: school_management
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - school-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: school-api-gateway
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - FRONTEND_URL=http://localhost:3000
+      - USER_SERVICE_URL=http://user-service:4001
+      - ACADEMIC_SERVICE_URL=http://academic-service:4002
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+    depends_on:
+      - user-service
+      - academic-service
+    networks:
+      - school-network
+    restart: unless-stopped
+
+  # User Service
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: school-user-service
+    ports:
+      - "4001:4001"
+    environment:
+      - NODE_ENV=production
+      - PORT=4001
+      - DATABASE_URL=postgresql://postgres:postgres123@postgres:5432/school_management
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - school-network
+    restart: unless-stopped
+
+  # Academic Service
+  academic-service:
+    build:
+      context: ./services/academic-service
+      dockerfile: Dockerfile
+    container_name: school-academic-service
+    ports:
+      - "4002:4002"
+    environment:
+      - NODE_ENV=production
+      - PORT=4002
+      - DATABASE_URL=postgresql://postgres:postgres123@postgres:5432/school_management
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - school-network
+    restart: unless-stopped
+
+  # Frontend (React)
+  frontend:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: school-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=http://localhost:4000
+    depends_on:
+      - api-gateway
+    networks:
+      - school-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  school-network:
+    driver: bridge
