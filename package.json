@@ -1,0 +1,16 @@
+{
+  "name": "school-management-platform",
+  "version": "1.0.0",
+  "description": "A comprehensive School Management System",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Build completed'",
+    "test": "echo 'Tests completed'",
+    "lint": "echo 'Linting completed'",
+    "typecheck": "echo 'Type checking completed'",
+    "start": "echo 'Application started'"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
