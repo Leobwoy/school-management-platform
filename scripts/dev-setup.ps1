@@ -46,11 +46,11 @@ Start-Sleep -Seconds 10
 
 # Generate Prisma clients
 Write-Host "🔧 Generating Prisma clients..." -ForegroundColor Yellow
-cd services/user-service
+Set-Location services/user-service
 npx prisma generate
-cd ../academic-service
+Set-Location ../academic-service
 npx prisma generate
-cd ../..
+Set-Location ../..
 
 Write-Host "✅ Development environment setup complete!" -ForegroundColor Green
 Write-Host ""
